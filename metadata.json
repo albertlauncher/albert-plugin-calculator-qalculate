@@ -6,5 +6,5 @@
     "license": "MIT",
     "name": "Calculator",
     "name[de]": "Rechner",
-    "url": "https://github.com/albertlauncher/plugins/tree/main/calculator_qalculate",
+    "url": "https://github.com/albertlauncher/albert-plugin-calculator_qalculate",
 }

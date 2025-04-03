@@ -195,15 +195,7 @@ vector<RankItem> Plugin::handleGlobalQuery(const Query &query)
     try {
         auto mstruct = std::get<MathStructure>(ret);
         results.emplace_back(buildItem(trimmed, mstruct), 1.0f);
-    } catch (const std::bad_variant_access &) {
-        try {
-            auto errors = std::get<QStringList>(ret);
-            for (const auto & e : errors)
-                DEBG << e;
-        } catch (const std::bad_variant_access &) {
-            CRIT << "Unhandled bad_variant_access";
-        }
-    }
+    } catch (const std::bad_variant_access &) { /* okay, optional */ }
 
     return results;
 }

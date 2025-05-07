@@ -10,6 +10,7 @@
 ALBERT_LOGGING_CATEGORY("qalculate")
 using namespace albert;
 using namespace std;
+using namespace util;
 
 namespace {
 const char* URL_MANUAL = "https://qalculate.github.io/manual/index.html";

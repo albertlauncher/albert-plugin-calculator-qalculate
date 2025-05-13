@@ -1,11 +1,12 @@
 // Copyright (C) 2023-2024 Manuel Schneider
 
 #pragma once
-#include <albert/globalqueryhandler.h>
-#include <albert/extensionplugin.h>
 #include <QObject>
+#include <albert/extensionplugin.h>
+#include <albert/globalqueryhandler.h>
 #include <libqalculate/Calculator.h>
 #include <memory>
+#include <mutex>
 
 class Plugin : public albert::ExtensionPlugin,
                public albert::GlobalQueryHandler

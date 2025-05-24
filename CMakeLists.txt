@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(calculator_qalculate VERSION 7.3)
+project(calculator_qalculate VERSION 7.4)
 
 find_package(Albert REQUIRED)
 

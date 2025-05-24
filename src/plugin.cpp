@@ -8,26 +8,27 @@
 #include <albert/logging.h>
 #include <albert/standarditem.h>
 ALBERT_LOGGING_CATEGORY("qalculate")
+using namespace Qt::StringLiterals;
 using namespace albert;
 using namespace std;
 using namespace util;
 
 namespace {
-const char* URL_MANUAL = "https://qalculate.github.io/manual/index.html";
-const char* CFG_ANGLEUNIT = "angle_unit";
-const uint  DEF_ANGLEUNIT = (int)ANGLE_UNIT_RADIANS;
-const char* CFG_PARSINGMODE = "parsing_mode";
-const uint  DEF_PARSINGMODE = (int)PARSING_MODE_CONVENTIONAL;
-const char* CFG_PRECISION = "precision";
-const uint  DEF_PRECISION = 16;
-const char* CFG_UNITS = "units_in_global_query";
-const bool  DEF_UNITS = false;
-const char* CFG_FUNCS = "functions_in_global_query";
-const bool  DEF_FUNCS = false;
+const auto URL_MANUAL      = u"https://qalculate.github.io/manual/index.html"_s;
+const auto CFG_ANGLEUNIT   = u"angle_unit"_s;
+const auto DEF_ANGLEUNIT   = (int)ANGLE_UNIT_RADIANS;
+const auto CFG_PARSINGMODE = "parsing_mode";
+const auto DEF_PARSINGMODE = (int)PARSING_MODE_CONVENTIONAL;
+const auto CFG_PRECISION   = u"precision"_s;
+const auto DEF_PRECISION   = 16;
+const auto CFG_UNITS       = u"units_in_global_query"_s;
+const auto DEF_UNITS       = false;
+const auto CFG_FUNCS       = u"functions_in_global_query"_s;
+const auto DEF_FUNCS       = false;
 
 }
 
-const QStringList Plugin::icon_urls = {"xdg:calc", ":qalculate"};
+const QStringList Plugin::icon_urls = {u"xdg:calc"_s, u":qalculate"_s};
 
 Plugin::Plugin()
 {
@@ -62,8 +63,7 @@ Plugin::Plugin()
     //po.abbreviate_names = true;
 }
 
-QString Plugin::defaultTrigger() const
-{ return "="; }
+QString Plugin::defaultTrigger() const { return u"="_s; }
 
 QString Plugin::synopsis(const QString &) const
 {
@@ -137,14 +137,14 @@ shared_ptr<Item> Plugin::buildItem(const QString &query, const MathStructure &ms
     auto result = QString::fromStdString(mstruct.print(po));
 
     return StandardItem::make(
-        "qalc-res",
+        u"qalc-res"_s,
         result,
         mstruct.isApproximate() ? tr_a.arg(query) : tr_e.arg(query),
         result,
         icon_urls,
         {
-            {"cpr", tr_tr, [=](){ setClipboardText(result); }},
-            {"cpe", tr_te, [=](){ setClipboardText(QString("%1 = %2").arg(query, result)); }}
+            {u"cpr"_s, tr_tr, [=](){ setClipboardText(result); }},
+            {u"cpe"_s, tr_te, [=](){ setClipboardText(QString(u"%1 = %2"_s).arg(query, result)); }}
         }
     );
 }
@@ -226,11 +226,11 @@ void Plugin::handleTriggerQuery(Query &query)
             static const auto tr_d = tr("Visit documentation");
             query.add(
                 StandardItem::make(
-                    "qalc-err",
+                    u"qalc-err"_s,
                     tr_e,
-                    errors.join(", "),
+                    errors.join(u", "_s),
                     icon_urls,
-                    {{"manual", tr_d, [=](){ openUrl(URL_MANUAL); }}}
+                    {{u"manual"_s, tr_d, [=](){ openUrl(URL_MANUAL); }}}
                 )
             );
         } catch (const std::bad_variant_access &) {

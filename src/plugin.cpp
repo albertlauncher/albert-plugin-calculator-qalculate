@@ -1,17 +1,17 @@
-// Copyright (c) 2023-2024 Manuel Schneider
+// Copyright (c) 2023-2025 Manuel Schneider
 
 #include "plugin.h"
 #include "ui_configwidget.h"
 #include <QSettings>
 #include <QThread>
-#include <albert/albert.h>
 #include <albert/logging.h>
 #include <albert/standarditem.h>
+#include <albert/systemutil.h>
 ALBERT_LOGGING_CATEGORY("qalculate")
 using namespace Qt::StringLiterals;
+using namespace albert::util;
 using namespace albert;
 using namespace std;
-using namespace util;
 
 namespace {
 const auto URL_MANUAL      = u"https://qalculate.github.io/manual/index.html"_s;

@@ -140,7 +140,6 @@ shared_ptr<Item> Plugin::buildItem(const QString &query, const MathStructure &ms
         u"qalc-res"_s,
         result,
         mstruct.isApproximate() ? tr_a.arg(query) : tr_e.arg(query),
-        result,
         icon_urls,
         {
             {u"cpr"_s, tr_tr, [=](){ setClipboardText(result); }},

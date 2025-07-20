@@ -28,7 +28,7 @@ private:
     std::variant<QStringList, MathStructure>
     runQalculateLocked(const albert::Query &, const EvaluationOptions &eo) ;
 
-    std::shared_ptr<albert::Item> buildItem(const QString &query, const MathStructure &mstruct) const;
+    std::shared_ptr<albert::Item> buildItem(const QString &query, MathStructure &mstruct) const;
 
     QString iconPath;
     std::unique_ptr<Calculator> qalc;

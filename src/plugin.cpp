@@ -128,12 +128,14 @@ QWidget *Plugin::buildConfigWidget()
     return widget;
 }
 
-shared_ptr<Item> Plugin::buildItem(const QString &query, const MathStructure &mstruct) const
+shared_ptr<Item> Plugin::buildItem(const QString &query, MathStructure &mstruct) const
 {
     static const auto tr_tr = tr("Copy result to clipboard");
     static const auto tr_te = tr("Copy equation to clipboard");
     static const auto tr_e = tr("Result of %1");
     static const auto tr_a = tr("Approximate result of %1");
+
+    mstruct.format(po);
     auto result = QString::fromStdString(mstruct.print(po));
 
     return StandardItem::make(
@@ -148,33 +150,28 @@ shared_ptr<Item> Plugin::buildItem(const QString &query, const MathStructure &ms
     );
 }
 
-std::variant<QStringList, MathStructure>
-Plugin::runQalculateLocked(const Query &query, const EvaluationOptions &eo_)
+variant<QStringList, MathStructure> Plugin::runQalculateLocked(const Query &query,
+                                                               const EvaluationOptions &eo_)
 {
+    MathStructure mstruct;
     auto expression = qalc->unlocalizeExpression(query.string().toStdString(), eo.parse_options);
 
     qalc->startControl();
-    MathStructure mstruct;
     qalc->calculate(&mstruct, expression, 0, eo_);
     for (; qalc->busy(); QThread::msleep(10))
         if (!query.isValid())
             qalc->abort();
     qalc->stopControl();
 
-    if (!query.isValid())
-        return QStringList();
-
-    QStringList errors;
-    for (auto msg = qalc->message(); msg; msg = qalc->nextMessage())
-        errors << QString::fromUtf8(qalc->message()->c_message());
-
-    if (errors.empty())
+    if (qalc->message())
     {
-        mstruct.format(po);
-        return mstruct;
+        QStringList errors;
+        for (auto msg = qalc->message(); msg; msg = qalc->nextMessage())
+            errors << QString::fromUtf8(qalc->message()->c_message());
+        return errors;
     }
     else
-        return errors;
+        return mstruct;
 }
 
 vector<RankItem> Plugin::handleGlobalQuery(const Query &query)
@@ -187,15 +184,10 @@ vector<RankItem> Plugin::handleGlobalQuery(const Query &query)
 
     lock_guard locker(qalculate_mutex);
 
-    auto ret = runQalculateLocked(query, eo);
+    auto var = runQalculateLocked(query, eo);
 
-    if (!query.isValid())
-        return results;
-
-    try {
-        auto mstruct = std::get<MathStructure>(ret);
-        results.emplace_back(buildItem(trimmed, mstruct), 1.0f);
-    } catch (const std::bad_variant_access &) { /* okay, optional */ }
+    if (query.isValid() && holds_alternative<MathStructure>(var))
+        results.emplace_back(buildItem(trimmed, get<MathStructure>(var)), 1.0f);
 
     return results;
 }
@@ -212,28 +204,26 @@ void Plugin::handleTriggerQuery(Query &query)
     eo_.parse_options.unknowns_enabled = true;
 
     lock_guard locker(qalculate_mutex);
+    auto var = runQalculateLocked(query, eo_);
 
-    auto ret = runQalculateLocked(query, eo_);
+    if (!query.isValid())
+        return;
 
-    try {
-        auto mstruct = std::get<MathStructure>(ret);
-        query.add(buildItem(trimmed, mstruct));
-    } catch (const std::bad_variant_access &) {
-        try {
-            auto errors = std::get<QStringList>(ret);
-            static const auto tr_e = tr("Evaluation error.");
-            static const auto tr_d = tr("Visit documentation");
-            query.add(
-                StandardItem::make(
-                    u"qalc-err"_s,
-                    tr_e,
-                    errors.join(u", "_s),
-                    icon_urls,
-                    {{u"manual"_s, tr_d, [=](){ openUrl(URL_MANUAL); }}}
-                )
-            );
-        } catch (const std::bad_variant_access &) {
-            CRIT << "Unhandled bad_variant_access";
-        }
+    if (holds_alternative<MathStructure>(var))
+        query.add(buildItem(trimmed, get<MathStructure>(var)));
+
+    else
+    {
+        static const auto tr_e = tr("Evaluation error.");
+        static const auto tr_d = tr("Visit documentation");
+        query.add(
+            StandardItem::make(
+                u"qalc-err"_s,
+                tr_e,
+                get<QStringList>(var).join(u", "_s),
+                icon_urls,
+                {{u"manual"_s, tr_d, [=](){ openUrl(URL_MANUAL); }}}
+            )
+        );
     }
 }

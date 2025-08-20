@@ -1,1 +1,1 @@
-# albert-plugin-calculator-qalculate
+# Albert plugin: Calculator

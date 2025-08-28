@@ -222,7 +222,8 @@ void Plugin::handleTriggerQuery(Query &query)
                 tr_e,
                 get<QStringList>(var).join(u", "_s),
                 icon_urls,
-                {{u"manual"_s, tr_d, [=](){ openUrl(URL_MANUAL); }}}
+                {{u"manual"_s, tr_d, [=](){ openUrl(URL_MANUAL); }}},
+                u""_s
             )
         );
     }

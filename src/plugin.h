@@ -35,6 +35,5 @@ private:
     EvaluationOptions eo;
     PrintOptions po;
     std::mutex qalculate_mutex;
-    static const QStringList icon_urls;
 
 };

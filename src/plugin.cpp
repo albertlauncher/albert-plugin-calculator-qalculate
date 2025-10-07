@@ -4,6 +4,7 @@
 #include "ui_configwidget.h"
 #include <QSettings>
 #include <QThread>
+#include <albert/iconutil.h>
 #include <albert/logging.h>
 #include <albert/standarditem.h>
 #include <albert/systemutil.h>
@@ -26,9 +27,8 @@ const auto DEF_UNITS       = false;
 const auto CFG_FUNCS       = u"functions_in_global_query"_s;
 const auto DEF_FUNCS       = false;
 
+static unique_ptr<Icon> makeIcon() { return makeThemeIcon(u"accessories-calculator"_s); }
 }
-
-const QStringList Plugin::icon_urls = {u"xdg:calc"_s, u":qalculate"_s};
 
 Plugin::Plugin()
 {
@@ -142,7 +142,7 @@ shared_ptr<Item> Plugin::buildItem(const QString &query, MathStructure &mstruct)
         u"qalc-res"_s,
         result,
         mstruct.isApproximate() ? tr_a.arg(query) : tr_e.arg(query),
-        icon_urls,
+        makeIcon,
         {
             {u"cpr"_s, tr_tr, [=](){ setClipboardText(result); }},
             {u"cpe"_s, tr_te, [=](){ setClipboardText(QString(u"%1 = %2"_s).arg(query, result)); }}
@@ -221,7 +221,7 @@ void Plugin::handleTriggerQuery(Query &query)
                 u"qalc-err"_s,
                 tr_e,
                 get<QStringList>(var).join(u", "_s),
-                icon_urls,
+                makeIcon,
                 {{u"manual"_s, tr_d, [=](){ openUrl(URL_MANUAL); }}},
                 u""_s
             )

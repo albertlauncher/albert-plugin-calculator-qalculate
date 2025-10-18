@@ -8,7 +8,7 @@
 #include <memory>
 #include <mutex>
 
-class Plugin : public albert::util::ExtensionPlugin,
+class Plugin : public albert::ExtensionPlugin,
                public albert::GlobalQueryHandler
 {
     ALBERT_PLUGIN
@@ -19,14 +19,13 @@ public:
 
     QString defaultTrigger() const override;
     QString synopsis(const QString &) const override;
-    void handleTriggerQuery(albert::Query &) override;
-    std::vector<albert::RankItem> handleGlobalQuery(const albert::Query &) override;
+    std::vector<albert::RankItem> rankItems(albert::QueryContext &) override;
     QWidget* buildConfigWidget() override;
 
 private:
 
     std::variant<QStringList, MathStructure>
-    runQalculateLocked(const albert::Query &, const EvaluationOptions &eo) ;
+    runQalculateLocked(const albert::QueryContext &, const EvaluationOptions &eo) ;
 
     std::shared_ptr<albert::Item> buildItem(const QString &query, MathStructure &mstruct) const;
 

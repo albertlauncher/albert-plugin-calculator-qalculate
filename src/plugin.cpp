@@ -10,7 +10,6 @@
 #include <albert/systemutil.h>
 ALBERT_LOGGING_CATEGORY("qalculate")
 using namespace Qt::StringLiterals;
-using namespace albert::util;
 using namespace albert;
 using namespace std;
 
@@ -150,16 +149,16 @@ shared_ptr<Item> Plugin::buildItem(const QString &query, MathStructure &mstruct)
     );
 }
 
-variant<QStringList, MathStructure> Plugin::runQalculateLocked(const Query &query,
+variant<QStringList, MathStructure> Plugin::runQalculateLocked(const QueryContext &ctx,
                                                                const EvaluationOptions &eo_)
 {
     MathStructure mstruct;
-    auto expression = qalc->unlocalizeExpression(query.string().toStdString(), eo.parse_options);
+    auto expression = qalc->unlocalizeExpression(ctx.query().toStdString(), eo.parse_options);
 
     qalc->startControl();
     qalc->calculate(&mstruct, expression, 0, eo_);
     for (; qalc->busy(); QThread::msleep(10))
-        if (!query.isValid())
+        if (!ctx.isValid())
             qalc->abort();
     qalc->stopControl();
 
@@ -174,49 +173,34 @@ variant<QStringList, MathStructure> Plugin::runQalculateLocked(const Query &quer
         return mstruct;
 }
 
-vector<RankItem> Plugin::handleGlobalQuery(const Query &query)
+vector<RankItem> Plugin::rankItems(QueryContext &ctx)
 {
     vector<RankItem> results;
 
-    auto trimmed = query.string().trimmed();
+    auto trimmed = ctx.query().trimmed();
     if (trimmed.isEmpty())
         return results;
 
-    lock_guard locker(qalculate_mutex);
-
-    auto var = runQalculateLocked(query, eo);
-
-    if (query.isValid() && holds_alternative<MathStructure>(var))
-        results.emplace_back(buildItem(trimmed, get<MathStructure>(var)), 1.0f);
-
-    return results;
-}
-
-void Plugin::handleTriggerQuery(Query &query)
-{
-    auto trimmed = query.string().trimmed();
-    if (trimmed.isEmpty())
-        return;
-
     auto eo_ = eo;
-    eo_.parse_options.functions_enabled = true;
-    eo_.parse_options.units_enabled = true;
-    eo_.parse_options.unknowns_enabled = true;
+    if (!ctx.trigger().isEmpty())
+    {
+        eo_.parse_options.functions_enabled = true;
+        eo_.parse_options.units_enabled = true;
+        eo_.parse_options.unknowns_enabled = true;
+    }
 
     lock_guard locker(qalculate_mutex);
-    auto var = runQalculateLocked(query, eo_);
+    auto var = runQalculateLocked(ctx, eo_);
 
-    if (!query.isValid())
-        return;
-
-    if (holds_alternative<MathStructure>(var))
-        query.add(buildItem(trimmed, get<MathStructure>(var)));
-
-    else
+    if (!ctx.isValid())
+        return results;
+    else if (holds_alternative<MathStructure>(var))
+        results.emplace_back(buildItem(trimmed, get<MathStructure>(var)), 1.0f);
+    else if (!ctx.trigger().isEmpty())
     {
         static const auto tr_e = tr("Evaluation error.");
         static const auto tr_d = tr("Visit documentation");
-        query.add(
+        results.emplace_back(
             StandardItem::make(
                 u"qalc-err"_s,
                 tr_e,
@@ -224,7 +208,10 @@ void Plugin::handleTriggerQuery(Query &query)
                 makeIcon,
                 {{u"manual"_s, tr_d, [=](){ openUrl(URL_MANUAL); }}},
                 u""_s
-            )
-        );
+                )
+            , .0
+            );
     }
+
+    return results;
 }

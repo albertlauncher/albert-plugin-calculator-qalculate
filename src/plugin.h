@@ -15,7 +15,7 @@ class Plugin : public albert::ExtensionPlugin,
 
 public:
 
-    Plugin();
+    void initialize() override;
 
     QString defaultTrigger() const override;
     QString synopsis(const QString &) const override;
@@ -34,5 +34,4 @@ private:
     EvaluationOptions eo;
     PrintOptions po;
     std::mutex qalculate_mutex;
-
 };

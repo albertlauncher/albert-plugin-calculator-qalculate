@@ -11,7 +11,7 @@ albert_plugin(
         ${LIBQALCULATE_INCLUDE_DIRS}
     LINK PRIVATE
         ${LIBQALCULATE_LIBRARIES}
-    QT Widgets
+    QT Concurrent Widgets
 )
 
 target_link_directories(${PROJECT_NAME} PRIVATE ${LIBQALCULATE_LIBRARY_DIRS})

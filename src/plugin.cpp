@@ -4,6 +4,7 @@
 #include "ui_configwidget.h"
 #include <QSettings>
 #include <QThread>
+#include <QtConcurrentRun>
 #include <albert/iconutil.h>
 #include <albert/logging.h>
 #include <albert/standarditem.h>
@@ -29,37 +30,43 @@ const auto DEF_FUNCS       = false;
 static unique_ptr<Icon> makeIcon() { return makeThemeIcon(u"accessories-calculator"_s); }
 }
 
-Plugin::Plugin()
+void Plugin::initialize()
 {
-    auto s = settings();
+    auto future = QtConcurrent::run([this]
+    {
+        auto s = settings();
 
-    // init calculator
-    qalc.reset(new Calculator());
-    qalc->loadExchangeRates();
-    qalc->loadGlobalCurrencies();
-    qalc->loadGlobalDefinitions();
-    qalc->loadLocalDefinitions();
-    qalc->setPrecision(s->value(CFG_PRECISION, DEF_PRECISION).toInt());
+        // init calculator
+        qalc.reset(new Calculator());
+        qalc->loadExchangeRates();
+        qalc->loadGlobalCurrencies();
+        qalc->loadGlobalDefinitions();
+        qalc->loadLocalDefinitions();
+        qalc->setPrecision(s->value(CFG_PRECISION, DEF_PRECISION).toInt());
 
-    // evaluation options
-    eo.auto_post_conversion = POST_CONVERSION_BEST;
-    eo.structuring = STRUCTURING_SIMPLIFY;
+        // evaluation options
+        eo.auto_post_conversion = POST_CONVERSION_BEST;
+        eo.structuring = STRUCTURING_SIMPLIFY;
 
-    // parse options
-    eo.parse_options.angle_unit = static_cast<AngleUnit>(s->value(CFG_ANGLEUNIT, DEF_ANGLEUNIT).toInt());
-    eo.parse_options.functions_enabled = s->value(CFG_FUNCS, DEF_FUNCS).toBool();
-    eo.parse_options.limit_implicit_multiplication = true;
-    eo.parse_options.parsing_mode = static_cast<ParsingMode>(s->value(CFG_PARSINGMODE, DEF_PARSINGMODE).toInt());
-    eo.parse_options.units_enabled = s->value(CFG_UNITS, DEF_UNITS).toBool();
-    eo.parse_options.unknowns_enabled = false;
+        // parse options
+        eo.parse_options.angle_unit = static_cast<AngleUnit>(s->value(CFG_ANGLEUNIT, DEF_ANGLEUNIT).toInt());
+        eo.parse_options.functions_enabled = s->value(CFG_FUNCS, DEF_FUNCS).toBool();
+        eo.parse_options.limit_implicit_multiplication = true;
+        eo.parse_options.parsing_mode = static_cast<ParsingMode>(s->value(CFG_PARSINGMODE, DEF_PARSINGMODE).toInt());
+        eo.parse_options.units_enabled = s->value(CFG_UNITS, DEF_UNITS).toBool();
+        eo.parse_options.unknowns_enabled = false;
 
-    // print options
-    po.indicate_infinite_series = true;
-    po.interval_display = INTERVAL_DISPLAY_SIGNIFICANT_DIGITS;
-    po.lower_case_e = true;
-    //po.preserve_precision = true;  // https://github.com/albertlauncher/plugins/issues/92
-    po.use_unicode_signs = true;
-    //po.abbreviate_names = true;
+        // print options
+        po.indicate_infinite_series = true;
+        po.interval_display = INTERVAL_DISPLAY_SIGNIFICANT_DIGITS;
+        po.lower_case_e = true;
+        //po.preserve_precision = true;  // https://github.com/albertlauncher/plugins/issues/92
+        po.use_unicode_signs = true;
+        //po.abbreviate_names = true;
+    })
+    .then(this, [this] {
+        emit initialized();
+    });
 }
 
 QString Plugin::defaultTrigger() const { return u"="_s; }

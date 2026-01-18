@@ -5,7 +5,7 @@
 #include <QSettings>
 #include <QThread>
 #include <QtConcurrentRun>
-#include <albert/iconutil.h>
+#include <albert/icon.h>
 #include <albert/logging.h>
 #include <albert/standarditem.h>
 #include <albert/systemutil.h>
@@ -27,7 +27,7 @@ const auto DEF_UNITS       = false;
 const auto CFG_FUNCS       = u"functions_in_global_query"_s;
 const auto DEF_FUNCS       = false;
 
-static unique_ptr<Icon> makeIcon() { return makeThemeIcon(u"accessories-calculator"_s); }
+static unique_ptr<Icon> makeIcon() { return Icon::theme(u"accessories-calculator"_s); }
 }
 
 void Plugin::initialize()

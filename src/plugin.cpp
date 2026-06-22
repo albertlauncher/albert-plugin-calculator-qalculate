@@ -156,7 +156,7 @@ shared_ptr<Item> Plugin::buildItem(const QString &query, MathStructure &mstruct)
     );
 }
 
-variant<QStringList, MathStructure> Plugin::runQalculateLocked(const QueryContext &ctx,
+variant<QStringList, MathStructure> Plugin::runQalculateLocked(const QueryContext ctx,
                                                                const EvaluationOptions &eo_)
 {
     MathStructure mstruct;
@@ -180,7 +180,7 @@ variant<QStringList, MathStructure> Plugin::runQalculateLocked(const QueryContex
         return mstruct;
 }
 
-vector<RankItem> Plugin::rankItems(QueryContext &ctx)
+vector<RankItem> Plugin::rankItems(QueryContext ctx)
 {
     vector<RankItem> results;
 

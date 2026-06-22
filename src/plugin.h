@@ -19,13 +19,13 @@ public:
 
     QString defaultTrigger() const override;
     QString synopsis(const QString &) const override;
-    std::vector<albert::RankItem> rankItems(albert::QueryContext &) override;
+    std::vector<albert::RankItem> rankItems(albert::QueryContext) override;
     QWidget* buildConfigWidget() override;
 
 private:
 
     std::variant<QStringList, MathStructure>
-    runQalculateLocked(const albert::QueryContext &, const EvaluationOptions &eo) ;
+    runQalculateLocked(const albert::QueryContext, const EvaluationOptions &eo) ;
 
     std::shared_ptr<albert::Item> buildItem(const QString &query, MathStructure &mstruct) const;
 
